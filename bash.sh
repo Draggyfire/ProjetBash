@@ -117,8 +117,8 @@ function lsR(){
     done
 }
 
-[ $# -lt 1 ] && echo "Veuillez rentrer au moins 1 arguments !" && exit 1
-[ $# -gt 4 ] && echo "Il ne peut y avloir plus de 4 argument !" && exit 1
+[ $# -lt 1 ] && echo "Veuillez rentrer au moins 1 argument !" && echo "$0 [-R] [-d] [-nsmletpg] rep" &&exit 1
+[ $# -gt 4 ] && echo "Il ne peut y avloir plus de 4 arguments !" && echo "$0 [-R] [-d] [-nsmletpg] rep" && exit 1
 
 recursive=0
 decroissant=0
