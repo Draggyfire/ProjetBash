@@ -116,6 +116,10 @@ function lsR(){
         fi
     done
 }
+
+[ $# -lt 1 ] && echo "Veuillez rentrer au moins 1 arguments !" && exit 1
+[ $# -gt 4 ] && echo "Il ne peut y avloir plus de 4 argument !" && exit 1
+
 recursive=0
 decroissant=0
 if [ $1 == "-R" ] 
@@ -131,7 +135,7 @@ then
     shift
 fi
 #rajouter autres parametres
-if [ $decroissant -eq 1 && $recursive -eq 1 ] 
+if [ $decroissant -eq 1 -a $recursive -eq 1 ]
 then
     echo "Les 2"
     triDec $1
