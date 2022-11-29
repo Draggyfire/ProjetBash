@@ -34,7 +34,7 @@ function reverseAffiche() {
 }
 
 function Affiche() {
-    #Affiche \$2 chaines de caractere dans $1 qui est sous la forme test.txt;test.c;test.o;
+    #Affiche $2 chaines de caractere dans $1 qui est sous la forme test.txt;test.c;test.o;
     #de la fin au début
     var=$1
     local i=$2
@@ -117,12 +117,79 @@ function lsR() {
     done
 }
 
+#TODO
+function triFusion() {
+    #lance le tri fusion sur $1
+    #la variable chaineTri contient la chaine qui sera tri dans les fonctions correspondantes
+    #$1: le nombre d'élement
+    #$2 (optionelle): l'ordre dans lequel les tri sont effectue
+    [ $# -lt 1 -o $# -gt 2 ] && echo "Veuillez rentrer 1 ou 2 parametres dans la fonction triFusion" && exit 1
+    [ $1 -le 1 ] && return 0
+    chaineEnTri=""
+    middle=$(($1 / 2))
+    end=$1
+    if [ $# -eq 2 ]; then
+        #TODO
+        echo "pas encore fait triFusion"
+    else
+        triN 1 $middle " "
+        triN $middle $end " "
+    fi
+    chaineTri=$chaineEnTri
+}
+
+function triN() {
+    #$1: debut premier tableau
+    #$2: debut 2eme tableau
+    #$3: ordre tri (peut valoir " ")
+    [ $# -ne 3 ] && echo "3 arguments dans la fonction triN" && exit 1
+    echo "chaineEnTri: $chaineEnTri"
+    local triString=""
+    local tabA=$(echo $chaineTri | cut -d';' -f$1)
+    local tabB=$(echo $chaineTri | cut -d';' -f$2)
+    [ $1 -ge $2 ] && return 0
+    if [ -n "$tabB" -a $1 -ge $middle ]; then
+        chaineEnTri="$chaineEnTri;$tabB"
+        triN $1 $(($2 + 1)) "$3"
+        return 0
+    elif [ -z $tabB -a $1 -ge $middle ]; then
+        return 0
+    fi
+    if [ -z $tabA -a -z$tabB ]; then
+        return 0
+    elif [ -z $tabB ]; then
+        chaineEnTri="$chaineEnTri;$tabA"
+        triN $(($1 + 1)) $2 "$3"
+        return 0
+    elif [ -z $tabA ]; then
+        chaineEnTri="$chaineEnTri;$tabB"
+        triN $1 $(($2 + 1)) "$3"
+        return 0
+    fi
+    if [ "$tabA" \< "$tabB" ]; then
+        chaineEnTri="$chaineEnTri;$tabA"
+        triN $(($1 + 1)) $2 "$3"
+    elif [ "$tabA" \> "$tabB" ]; then
+        chaineEnTri="$chaineEnTri;$tabB"
+        triN $1 $(($2 + 1)) "$3"
+    else
+        if [ "$3" == " " ]; then
+            chaineEnTri="$chaineEnTri;$tabA"
+            triN $(($1 + 1)) $2 "$3"
+        else
+            #TODO
+            echo "TODO triN"
+        fi
+    fi
+}
+
 [ $# -lt 1 ] && echo "Veuillez rentrer au moins 1 argument !" && echo "$0 [-R] [-d] [-nsmletpg] rep" && exit 1
-[ $# -gt 4 ] && echo "Il ne peut y avloir plus de 4 arguments !" && echo "$0 [-R] [-d] [-nsmletpg] rep" && exit 1
+[ $# -gt 4 ] && echo "Il ne peut y avoir plus de 4 arguments !" && echo "$0 [-R] [-d] [-nsmletpg] rep" && exit 1
 
 recursive=0
 decroissant=0
 triParam=""
+chaineTri=""
 
 if [ "$1" == "-R" ]; then
     echo "recursive 1"
@@ -144,7 +211,17 @@ if [ "${1:0:1}" == "-" ]; then
         [ $? -eq 0 ] && triParam=$triParam$triChar
         ThirdParamCpt=$((ThirdParamCpt + 1))
     done
-    echo "tri: $triParam"
+    shift
+    #echo "tri: $triParam"
+fi
+
+if [ $triParam != "" ]; then
+    res=$(savels $1)
+    nb=$(echo $res | cut -d' ' -f2)
+    chaineTri="${res%$nb}"
+    echo "chaine1: $chaineTri"
+    triFusion $nb
+    echo "chaine2: $chaineTri"
 fi
 
 if [ $decroissant -eq 1 -a $recursive -eq 1 ]; then
