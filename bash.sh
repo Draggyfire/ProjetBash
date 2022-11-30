@@ -116,6 +116,117 @@ function lsR(){
         fi
     done
 }
+
+
+function getWord() {
+    #echo le mot à l'index $2 de la chaine $1
+    var=`echo  "$1" | cut -d';' -f$(($2+1))`
+    echo $var
+}
+
+getWord "Ceci;est;un;test;Pour;compter;les;mots;" 7
+
+function lenStr(){
+    #calcule le nb de mots dans une chaine de carac sous la forme zzaiecj.txt;zaeijczia;zaiej;
+    tailleTotal=`echo -n $1 | wc -c`
+    nbLettres=`echo -n $1 | sed 's/;//g' | wc -c`
+    nbMots=$((tailleTotal-nbLettres))
+    echo "$nbMots"
+}
+
+liste_gauche=""
+liste_droite=""
+liste=""
+
+function putListe(){
+    # $1 mot $2 index 
+    echo "--------------------"
+    echo "PutListe : $1 $2"
+    local len_liste=$(lenStr $liste)
+    echo $liste
+    if [ $2 -ge $len_liste ]; then
+        liste="$liste;$1"
+    fi
+    echo $liste
+    echo "--------------------"
+}
+
+
+
+lenStr "A;B;C;D;E;F;G;H;"
+echo $nbMots
+
+
+
+
+
+function fusion() {
+    #Prend chaine de caracteres à trier en param
+    n=$(lenStr $1)
+    echo "Taille entrée : $n"
+    if [ $n -gt 1 ]; then
+        local milieu=$((n/2))
+        echo "Milieu : $milieu"
+        local liste_gauche=$(echo "$1" | cut -d';' -f-$milieu)
+        liste_gauche="$liste_gauche;"
+        local liste_droite=$(echo "$1" | cut -d';' -f$((milieu+1))-)
+        echo "Gauche : $liste_gauche"
+        echo "Droite : $liste_droite"
+        fusion $liste_gauche
+        fusion $liste_droite
+
+        echo "Gauche -R: $liste_gauche"
+        echo "Droite -R: $liste_droite"
+
+        local indice_liste=0
+        local indice_gauche=0
+        local indice_droite=0
+        local len_gauche=$(lenStr $liste_gauche)
+        local len_droite=$(lenStr $liste_droite)
+        echo "Leng : $len_gauche"
+        echo "Lend : $len_droite"
+
+        while [ $indice_gauche -lt $len_gauche -a $indice_droite -lt $len_droite ]; do
+            echo "getWord $liste_gauche $indice_gauche"
+            echo "getWord $liste_droite $indice_droite"
+            local mot_gauche=$(getWord $liste_gauche $indice_gauche)
+            local mot_droite=$(getWord $liste_droite $indice_droite)
+            echo "Mg : $mot_gauche"
+            echo "Md : $mot_droite"
+
+            if [ "$mot_gauche" \< "$mot_droite" ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche+1))
+            else 
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite+1))
+            fi
+            indice_liste=$((indice_liste+1))
+        done
+
+        while [ $indice_gauche -lt $len_gauche ]; do
+            local mot_gauche=$(getWord $liste_gauche $indice_gauche)
+            putListe $mot_gauche $indice_liste
+            indice_gauche=$((indice_gauche+1))
+            indice_liste=$((indice_liste+1))
+        done
+        while [ $indice_droite -lt $len_droite ]; do
+            local mot_droite=$(getWord $liste_droite $indice_droite)
+            putListe $mot_droite $indice_liste
+            indice_droite=$((indice_droite+1))
+            indice_liste=$((indice_liste+1))
+        done
+    fi
+}
+
+function trifusion(){
+    # prend chaine de carac en $1
+    fusion $1
+    liste="$liste;"
+    liste="${liste:1}"
+    echo $liste
+}
+
 recursive=0
 decroissant=0
 if [ $1 == "-R" ] 
