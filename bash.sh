@@ -163,36 +163,22 @@ echo $nbMots
 function fusion() {
     #Prend chaine de caracteres à trier en param
     n=$(lenStr $1)
-    echo "Taille entrée : $n"
     if [ $n -gt 1 ]; then
         local milieu=$((n/2))
-        echo "Milieu : $milieu"
         local liste_gauche=$(echo "$1" | cut -d';' -f-$milieu)
         liste_gauche="$liste_gauche;"
         local liste_droite=$(echo "$1" | cut -d';' -f$((milieu+1))-)
-        echo "Gauche : $liste_gauche"
-        echo "Droite : $liste_droite"
         fusion $liste_gauche
         fusion $liste_droite
-
-        echo "Gauche -R: $liste_gauche"
-        echo "Droite -R: $liste_droite"
-
         local indice_liste=0
         local indice_gauche=0
         local indice_droite=0
         local len_gauche=$(lenStr $liste_gauche)
         local len_droite=$(lenStr $liste_droite)
-        echo "Leng : $len_gauche"
-        echo "Lend : $len_droite"
 
         while [ $indice_gauche -lt $len_gauche -a $indice_droite -lt $len_droite ]; do
-            echo "getWord $liste_gauche $indice_gauche"
-            echo "getWord $liste_droite $indice_droite"
             local mot_gauche=$(getWord $liste_gauche $indice_gauche)
             local mot_droite=$(getWord $liste_droite $indice_droite)
-            echo "Mg : $mot_gauche"
-            echo "Md : $mot_droite"
 
             if [ "$mot_gauche" \< "$mot_droite" ]; then
                 putListe $mot_gauche $indice_liste
