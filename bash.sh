@@ -20,6 +20,21 @@ function triIsAvailable() {
     return 1
 }
 
+function takeOffWord() {
+    #retire le mot numero $1 dans la chaine $chaineTri
+    [ $# -ne 1 ] && echo "Veuillez rentrer 1 parametre dans le fonction takeOffWord !" && exit 1
+    takeOffWordString=""
+    for ((i = 1; i <= $end; i++)); do
+        if [ $i -ne $1 ]; then
+            takeOffWordTmp=$(echo "$chaineTri" | cut -d';' -f$i)
+            takeOffWordString="$takeOffWordString;$takeOffWordTmp"
+        fi
+    done
+    chaineTri=$takeOffWordString
+    chaineTri=${chaineTri:1}
+    end=$(($end - 1))
+}
+
 function reverseAffiche() {
     #Affiche $2 chaines de caractere dans $1 qui est sous la forme test.txt;test.c;test.o;
     #de la fin au début
@@ -125,17 +140,17 @@ function triFusion() {
     #$2 (optionelle): l'ordre dans lequel les tri sont effectue
     [ $# -lt 1 -o $# -gt 2 ] && echo "Veuillez rentrer 1 ou 2 parametres dans la fonction triFusion" && exit 1
     [ $1 -le 1 ] && return 0
-    chaineEnTri=""
     middle=$(($1 / 2))
     end=$1
     if [ $# -eq 2 ]; then
         #TODO
         echo "pas encore fait triFusion"
     else
+        chaineEnTri=""
         triN 1 $middle " "
         triN $middle $end " "
+        chaineTri=$chaineEnTri
     fi
-    chaineTri=$chaineEnTri
 }
 
 function triN() {
@@ -143,43 +158,40 @@ function triN() {
     #$2: debut 2eme tableau
     #$3: ordre tri (peut valoir " ")
     [ $# -ne 3 ] && echo "3 arguments dans la fonction triN" && exit 1
+    local tabA=$(echo "$chaineTri" | cut -d';' -f$1)
+    local tabB=$(echo "$chaineTri" | cut -d';' -f$2)
+    echo "chaineTri: $chaineTri"
     echo "chaineEnTri: $chaineEnTri"
-    local triString=""
-    local tabA=$(echo $chaineTri | cut -d';' -f$1)
-    local tabB=$(echo $chaineTri | cut -d';' -f$2)
-    [ $1 -ge $2 ] && return 0
-    if [ -n "$tabB" -a $1 -ge $middle ]; then
+    echo "tabA: $tabA"
+    echo "tabB: $tabB"
+    echo "------------------------"
+    if [ -z $tabA ]; then
         chaineEnTri="$chaineEnTri;$tabB"
-        triN $1 $(($2 + 1)) "$3"
-        return 0
-    elif [ -z $tabB -a $1 -ge $middle ]; then
-        return 0
-    fi
-    if [ -z $tabA -a -z$tabB ]; then
         return 0
     elif [ -z $tabB ]; then
         chaineEnTri="$chaineEnTri;$tabA"
-        triN $(($1 + 1)) $2 "$3"
-        return 0
-    elif [ -z $tabA ]; then
-        chaineEnTri="$chaineEnTri;$tabB"
-        triN $1 $(($2 + 1)) "$3"
         return 0
     fi
     if [ "$tabA" \< "$tabB" ]; then
+        takeOffWord $1
         chaineEnTri="$chaineEnTri;$tabA"
-        triN $(($1 + 1)) $2 "$3"
+        triN $1 $(($2 - 1)) "$3"
+        return 0
     elif [ "$tabA" \> "$tabB" ]; then
+        takeOffWord $2
         chaineEnTri="$chaineEnTri;$tabB"
-        triN $1 $(($2 + 1)) "$3"
+        triN $1 $2 "$3"
+        return 0
     else
-        if [ "$3" == " " ]; then
+        case "$4" in
+        *)
+            takeOffWord $1
             chaineEnTri="$chaineEnTri;$tabA"
-            triN $(($1 + 1)) $2 "$3"
-        else
-            #TODO
-            echo "TODO triN"
-        fi
+            triN $1 $(($2 - 1)) "$3"
+            return 0
+            ;;
+        esac
+
     fi
 }
 
