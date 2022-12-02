@@ -124,8 +124,6 @@ function getWord() {
     echo $var
 }
 
-getWord "Ceci;est;un;test;Pour;compter;les;mots;" 7
-
 function lenStr(){
     #calcule le nb de mots dans une chaine de carac sous la forme zzaiecj.txt;zaeijczia;zaiej;
     tailleTotal=`echo -n $1 | wc -c`
@@ -137,27 +135,44 @@ function lenStr(){
 liste_gauche=""
 liste_droite=""
 liste=""
+testList=""
+
 
 function putListe(){
     # $1 mot $2 index 
     echo "--------------------"
     echo "PutListe : $1 $2"
     local len_liste=$(lenStr $liste)
-    echo $liste
+    local avListe=""
+    local apListe=""
     if [ $2 -ge $len_liste ]; then
-        liste="$liste;$1"
+        if [ -z $liste ]; then
+            liste="$1;"
+        else
+            liste="$liste$1;"
+        fi
+    else 
+        if [ $2 -gt 0 ]; then
+            avListe=`echo  "$liste" | cut -d';' -f-$(($2))`
+        fi
+        apListe=`echo  "$liste" | cut -d';' -f$(($2+2))-`
+        
+        if [ -z $apListe ]; then 
+            if [ -z $avListe ]; then
+                liste="$1;"
+            else
+                liste="$avListe;$1;"
+            fi
+        else
+            if [ -z $avListe ]; then
+                liste="$1;$apListe"
+            else
+                liste="$avListe;$1;$apListe"
+            fi
+        fi
     fi
-    echo $liste
     echo "--------------------"
 }
-
-
-
-lenStr "A;B;C;D;E;F;G;H;"
-echo $nbMots
-
-
-
 
 
 function fusion() {
@@ -168,18 +183,29 @@ function fusion() {
         local liste_gauche=$(echo "$1" | cut -d';' -f-$milieu)
         liste_gauche="$liste_gauche;"
         local liste_droite=$(echo "$1" | cut -d';' -f$((milieu+1))-)
+        testList=""
+        liste=""
         fusion $liste_gauche
-        fusion $liste_droite
+        liste_gauche=$testList
+        testList=""
+        fusion $liste_droite  
+        liste_droite=$testList      
+        #echo "Liste param : $1"
+
         local indice_liste=0
         local indice_gauche=0
         local indice_droite=0
         local len_gauche=$(lenStr $liste_gauche)
         local len_droite=$(lenStr $liste_droite)
+        local mot_gauche=""
+        local mot_droite=""
 
         while [ $indice_gauche -lt $len_gauche -a $indice_droite -lt $len_droite ]; do
-            local mot_gauche=$(getWord $liste_gauche $indice_gauche)
-            local mot_droite=$(getWord $liste_droite $indice_droite)
-
+            echo "LG : $liste_gauche iG :  $indice_gauche"
+            echo "LD : $liste_droite iD :  $indice_droite"
+            mot_gauche=$(getWord $liste_gauche $indice_gauche)
+            mot_droite=$(getWord $liste_droite $indice_droite)
+            echo "MotG : $mot_gauche  | MotD : $mot_droite"
             if [ "$mot_gauche" \< "$mot_droite" ]; then
                 putListe $mot_gauche $indice_liste
                 indice_gauche=$((indice_gauche+1))
@@ -191,56 +217,42 @@ function fusion() {
         done
 
         while [ $indice_gauche -lt $len_gauche ]; do
-            local mot_gauche=$(getWord $liste_gauche $indice_gauche)
+            mot_gauche=$(getWord $liste_gauche $indice_gauche)
             putListe $mot_gauche $indice_liste
             indice_gauche=$((indice_gauche+1))
             indice_liste=$((indice_liste+1))
         done
         while [ $indice_droite -lt $len_droite ]; do
-            local mot_droite=$(getWord $liste_droite $indice_droite)
+            mot_droite=$(getWord $liste_droite $indice_droite)
             putListe $mot_droite $indice_liste
             indice_droite=$((indice_droite+1))
             indice_liste=$((indice_liste+1))
         done
+        testList=$liste
+    else
+        testList=$1
     fi
 }
 
 function trifusion(){
     # prend chaine de carac en $1
     fusion $1
-    liste="$liste;"
-    liste="${liste:1}"
-    echo $liste
+    echo "Liste : $liste"
 }
+
+trifusion "A;Z;E;R;T;Y;U;I;O;P;Q;S;D;F;G;H;J;K;L;M;W;X;C;V;B;N;"
 
 recursive=0
 decroissant=0
-if [ $1 == "-R" ] 
+if [ $1 == "-R" ];
 then
     echo "recursive 1"
     recursive=1
     shift
 fi
-if [ $1 == "-d" ] 
+if [ $1 == "-d" ];
 then
     echo "décroissant 1"
     decroissant=1
     shift
-fi
-#rajouter autres parametres
-if [ $decroissant -eq 1 && $recursive -eq 1 ] 
-then
-    echo "Les 2"
-    triDec $1
-elif [ $decroissant -eq 1 ] 
-then
-    echo "tri decroissant"
-    triDec $1
-elif [ $recursive -eq 1 ] 
-then
-    echo "Recursive"
-    lsR $1 0
-else
-    echo "ls normal"
-    ls $1
 fi
