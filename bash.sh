@@ -170,6 +170,39 @@ function putListe() {
     #echo "--------------------"
 }
 
+function cmp() {
+    #ajoute le mot gauche OU droite a l'aide de la fonction putListe en fonction de paramTri
+    #$1: motGauche
+    #$2: motDroite
+    #$3: indiceListe
+    #$4: paramTri
+    [ $# -ne 4 ] && "4 parametres dans la fonction cmp" && exit 1
+
+    paramTriCpt=0
+    added=0
+    while [ $added -eq 0 -a $paramTriCpt -le ${#4} ]; do
+        myParam=${4:paramTriCpt:1}
+        case $myParam in
+        n)
+            if [ "$mot_gauche" \< "$mot_droite" ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite + 1))
+                added=1
+            fi
+            ;;
+        *)
+            echo "unknown"
+            ;;
+        esac
+
+        paramTriCpt=$((paramTriCpt + 1))
+    done
+}
+
 function fusion() {
     #Prend chaine de caracteres à trier en param
     n=$(lenStr $1)
@@ -180,10 +213,10 @@ function fusion() {
         local liste_droite=$(echo "$1" | cut -d';' -f$((milieu + 1))-)
         testList=""
         liste=""
-        fusion $liste_gauche
+        fusion $liste_gauche $2
         liste_gauche=$testList
         testList=""
-        fusion $liste_droite
+        fusion $liste_droite $2
         liste_droite=$testList
         #echo "Liste param : $1"
 
@@ -201,13 +234,7 @@ function fusion() {
             mot_gauche=$(getWord $liste_gauche $indice_gauche)
             mot_droite=$(getWord $liste_droite $indice_droite)
             #echo "MotG : $mot_gauche  | MotD : $mot_droite"
-            if [ "$mot_gauche" \< "$mot_droite" ]; then
-                putListe $mot_gauche $indice_liste
-                indice_gauche=$((indice_gauche + 1))
-            else
-                putListe $mot_droite $indice_liste
-                indice_droite=$((indice_droite + 1))
-            fi
+            cmp $mot_gauche $mot_droite $indice_liste "$2"
             indice_liste=$((indice_liste + 1))
         done
 
@@ -231,7 +258,7 @@ function fusion() {
 
 function trifusion() {
     # prend chaine de carac en $1
-    fusion $1
+    fusion $1 "$2"
     #echo "Liste : $liste"
 }
 
@@ -282,7 +309,7 @@ fi
 if [ -n $triParam ]; then
     #echo "Liste: $liste"
     echo "triParam: $triParam"
-    trifusion $liste
+    trifusion $liste "$triParam"
 fi
 
 if [ $decroissant -eq 1 ]; then
