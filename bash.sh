@@ -99,8 +99,7 @@ cpt=0
 function savelsR() {
     #Sauvegarde recursievement le repertoire $1 sous la forme test.txt;test.c;
     for i in "$1"/*; do
-        tmp="${i#$1/}"
-        save="$save$tmp;"
+        save="$save$i;"
         cpt=$((cpt + 1))
         if [ -d $i ]; then
             savelsR $i
@@ -176,8 +175,9 @@ function cmp() {
     #$2: motDroite
     #$3: indiceListe
     #$4: paramTri
-    #$5: Le chemin (pour stat)
-    [ $# -ne 5 ] && "5 parametres dans la fonction cmp" && exit 1
+    #$5: Le chemin de motGauche (pour stat)
+    #$6: Le chemin de motDroite
+    [ $# -ne 6 ] && "6 parametres dans la fonction cmp" && exit 1
 
     paramTriCpt=0
     added=0
@@ -188,17 +188,26 @@ function cmp() {
             cmpGauche=$(stat "$5/$mot_gauche")
             cmpGauche=$(echo $cmpGauche | cut -d':' -f3)
             cmpGauche=$(echo $cmpGauche | tr -d ' ')
-            cmpDroite=$(stat "$5/$mot_droite")
+
+            cmpDroite=$(stat "$6/$mot_droite")
             cmpDroite=$(echo $cmpDroite | cut -d':' -f3)
             cmpDroite=$(echo $cmpDroite | tr -d ' ')
             cmpGauche=${cmpGauche:0:${#cmpGauche}-6}
             cmpDroite=${cmpDroite:0:${#cmpDroite}-6}
             if [ $cmpGauche -lt $cmpDroite ]; then
-                putListe $mot_gauche $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_gauche $indice_liste
+                else
+                    putListe "$5$mot_gauche" $indice_liste
+                fi
                 indice_gauche=$((indice_gauche + 1))
                 added=1
             elif [ $cmpGauche -gt $cmpDroite ]; then
-                putListe $mot_droite $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_droite $indice_liste
+                else
+                    putListe "$6$mot_droite" $indice_liste
+                fi
                 indice_droite=$((indice_droite + 1))
                 added=1
             fi
@@ -207,15 +216,24 @@ function cmp() {
             cmpGauche=$(stat "$5/$mot_gauche")
             cmpGauche=$(echo $cmpGauche | cut -d':' -f15)
             cmpGauche=$(echo $cmpGauche | tr -d ' ')
-            cmpDroite=$(stat "$5/$mot_droite")
+
+            cmpDroite=$(stat "$6/$mot_droite")
             cmpDroite=$(echo $cmpDroite | cut -d':' -f15)
             cmpDroite=$(echo $cmpDroite | tr -d ' ')
             if [ $cmpGauche \< $cmpDroite ]; then
-                putListe $mot_gauche $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_gauche $indice_liste
+                else
+                    putListe "$5$mot_gauche" $indice_liste
+                fi
                 indice_gauche=$((indice_gauche + 1))
                 added=1
             elif [ $cmpGauche \> $cmpDroite ]; then
-                putListe $mot_droite $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_droite $indice_liste
+                else
+                    putListe "$6$mot_droite" $indice_liste
+                fi
                 indice_droite=$((indice_droite + 1))
                 added=1
             fi
@@ -224,14 +242,22 @@ function cmp() {
             if [ -f "$5/$mot_gauche" -a -f "$5/$mot_droite" ]; then
                 cmpGauche=$(wc -l "$5/$mot_gauche")
                 cmpGauche=$(echo $cmpGauche | tr -d " $5/$mot_gauche")
-                cmpDroite=$(wc -l "$5/$mot_droite")
-                cmpDroite=$(echo $cmpDroite | tr -d " $5/$mot_droite")
+                cmpDroite=$(wc -l "$6/$mot_droite")
+                cmpDroite=$(echo $cmpDroite | tr -d " $6/$mot_droite")
                 if [ $cmpGauche -lt $cmpDroite ]; then
-                    putListe $mot_gauche $indice_liste
+                    if [ $recursive -eq 0 ]; then
+                        putListe $mot_gauche $indice_liste
+                    else
+                        putListe "$5$mot_gauche" $indice_liste
+                    fi
                     indice_gauche=$((indice_gauche + 1))
                     added=1
                 elif [ $cmpGauche -gt $cmpDroite ]; then
-                    putListe $mot_droite $indice_liste
+                    if [ $recursive -eq 0 ]; then
+                        putListe $mot_droite $indice_liste
+                    else
+                        putListe "$6$mot_droite" $indice_liste
+                    fi
                     indice_droite=$((indice_droite + 1))
                     added=1
                 fi
@@ -242,11 +268,19 @@ function cmp() {
                 cmpGauche=$(echo "$mot_gauche" | cut -d'.' -f2)
                 cmpDroite=$(echo "$mot_droite" | cut -d'.' -f2)
                 if [ "$mot_gauche" \< "$mot_droite" ]; then
-                    putListe $mot_gauche $indice_liste
+                    if [ $recursive -eq 0 ]; then
+                        putListe $mot_gauche $indice_liste
+                    else
+                        putListe "$5$mot_gauche" $indice_liste
+                    fi
                     indice_gauche=$((indice_gauche + 1))
                     added=1
                 elif [ "$mot_gauche" \> "$mot_droite" ]; then
-                    putListe $mot_droite $indice_liste
+                    if [ $recursive -eq 0 ]; then
+                        putListe $mot_droite $indice_liste
+                    else
+                        putListe "$6$mot_droite" $indice_liste
+                    fi
                     indice_droite=$((indice_droite + 1))
                     added=1
                 fi
@@ -258,18 +292,27 @@ function cmp() {
             cmpGauche=$(echo $cmpGauche | cut -d':' -f10)
             cmpGauche=$(echo $cmpGauche | cut -d'/' -f2)
             cmpGauche=$(echo $cmpGauche | tr -d ' ')
-            cmpDroite=$(stat "$5/$mot_droite")
+
+            cmpDroite=$(stat "$6/$mot_droite")
             cmpDroite=$(echo $cmpDroite | cut -d':' -f10)
             cmpDroite=$(echo $cmpDroite | cut -d'/' -f2)
             cmpDroite=$(echo $cmpDroite | tr -d ' ')
             cmpGauche=${cmpGauche:0:${#cmpGauche}-5}
             cmpDroite=${cmpDroite:0:${#cmpDroite}-5}
             if [ $cmpGauche \< $cmpDroite ]; then
-                putListe $mot_gauche $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_gauche $indice_liste
+                else
+                    putListe "$5$mot_gauche" $indice_liste
+                fi
                 indice_gauche=$((indice_gauche + 1))
                 added=1
             elif [ $cmpGauche \> $cmpDroite ]; then
-                putListe $mot_droite $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_droite $indice_liste
+                else
+                    putListe "$6$mot_droite" $indice_liste
+                fi
                 indice_droite=$((indice_droite + 1))
                 added=1
             fi
@@ -279,29 +322,46 @@ function cmp() {
             cmpGauche=$(echo $cmpGauche | cut -d':' -f11)
             cmpGauche=$(echo $cmpGauche | cut -d'/' -f2)
             cmpGauche=$(echo $cmpGauche | tr -d ' ')
-            cmpDroite=$(stat "$5/$mot_droite")
+
+            cmpDroite=$(stat "$6/$mot_droite")
             cmpDroite=$(echo $cmpDroite | cut -d':' -f11)
             cmpDroite=$(echo $cmpDroite | cut -d'/' -f2)
             cmpDroite=$(echo $cmpDroite | tr -d ' ')
             cmpGauche=${cmpGauche:0:${#cmpGauche}-5}
             cmpDroite=${cmpDroite:0:${#cmpDroite}-5}
             if [ $cmpGauche \< $cmpDroite ]; then
-                putListe $mot_gauche $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_gauche $indice_liste
+                else
+                    putListe "$5$mot_gauche" $indice_liste
+                fi
                 indice_gauche=$((indice_gauche + 1))
                 added=1
             elif [ $cmpGauche \> $cmpDroite ]; then
-                putListe $mot_droite $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_droite $indice_liste
+                else
+                    putListe "$6$mot_droite" $indice_liste
+                fi
                 indice_droite=$((indice_droite + 1))
                 added=1
             fi
             ;;
         *)
             if [ "$mot_gauche" \< "$mot_droite" ]; then
-                putListe $mot_gauche $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_gauche $indice_liste
+                else
+                    putListe "$5$mot_gauche" $indice_liste
+                fi
                 indice_gauche=$((indice_gauche + 1))
                 added=1
             else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
-                putListe $mot_droite $indice_liste
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_droite $indice_liste
+                else
+                    putListe "$6$mot_droite" $indice_liste
+                fi
                 indice_droite=$((indice_droite + 1))
                 added=1
             fi
@@ -344,8 +404,28 @@ function fusion() {
             mot_droite=$(getWord $liste_droite $indice_droite)
             #echo "MotG : $mot_gauche  | MotD : $mot_droite"
 
-            cmp $mot_gauche $mot_droite $indice_liste "$2" "$3"
+            if [ $recursive -eq 0 ]; then
+                cmp $mot_gauche $mot_droite $indice_liste "$2" "$3" "$3"
+            else
 
+                tailleTotalG=$(echo -n "$mot_gauche" | wc -c)
+                nbLettresG=$(echo -n "$mot_gauche" | sed 's/\///g' | wc -c)
+                nbMotsG=$((tailleTotalG - nbLettresG + 1))
+
+                tailleTotalD=$(echo -n "$mot_droite" | wc -c)
+                nbLettresD=$(echo -n "$mot_droite" | sed 's/\///g' | wc -c)
+                nbMotsD=$((tailleTotalD - nbLettresD + 1))
+
+                tmp=$(echo "$mot_gauche" | cut -d'/' -f$nbMotsG)
+                pathG=${mot_gauche:0:${#mot_gauche}-${#tmp}}
+                mot_gauche=$tmp
+
+                tmp=$(echo "$mot_droite" | cut -d'/' -f$nbMotsD)
+                pathD=${mot_droite:0:${#mot_droite}-${#tmp}}
+                mot_droite=$tmp
+
+                cmp $mot_gauche $mot_droite $indice_liste "$2" "$pathG" "$pathD"
+            fi
             indice_liste=$((indice_liste + 1))
         done
 
@@ -404,6 +484,7 @@ if [ $recursive -eq 1 ]; then
     savelsR $1
     nb=$cpt
     liste=$save
+    echo "liste: $liste"
 else
     res=$(savels $1)
     echo "res: $res"
