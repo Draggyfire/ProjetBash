@@ -214,6 +214,23 @@ function cmp() {
                 added=1
             fi
             ;;
+        m)
+            cmpGauche=$(stat "$5/$mot_gauche")
+            cmpGauche=$(echo $cmpGauche | cut -d':' -f15)
+            cmpGauche=$(echo $cmpGauche | tr -d ' ')
+            cmpDroite=$(stat "$5/$mot_droite")
+            cmpDroite=$(echo $cmpDroite | cut -d':' -f15)
+            cmpDroite=$(echo $cmpDroite | tr -d ' ')
+            if [ $cmpGauche \< $cmpDroite ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite + 1))
+                added=1
+            fi
+            ;;
         *)
             echo "unknown"
             ;;
