@@ -197,7 +197,7 @@ function cmp() {
                 putListe $mot_gauche $indice_liste
                 indice_gauche=$((indice_gauche + 1))
                 added=1
-            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+            elif [ $cmpGauche -gt $cmpDroite ]; then
                 putListe $mot_droite $indice_liste
                 indice_droite=$((indice_droite + 1))
                 added=1
@@ -214,7 +214,7 @@ function cmp() {
                 putListe $mot_gauche $indice_liste
                 indice_gauche=$((indice_gauche + 1))
                 added=1
-            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+            elif [ $cmpGauche \> $cmpDroite ]; then
                 putListe $mot_droite $indice_liste
                 indice_droite=$((indice_droite + 1))
                 added=1
@@ -230,11 +230,69 @@ function cmp() {
                     putListe $mot_gauche $indice_liste
                     indice_gauche=$((indice_gauche + 1))
                     added=1
-                else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+                elif [ $cmpGauche -gt $cmpDroite ]; then
                     putListe $mot_droite $indice_liste
                     indice_droite=$((indice_droite + 1))
                     added=1
                 fi
+            fi
+            ;;
+        e) #marche pas come prevu
+            if [ "$mot_gauche" == "*.*" -a "$mot_droite" == "*.*" ]; then
+                cmpGauche=$(echo "$mot_gauche" | cut -d'.' -f2)
+                cmpDroite=$(echo "$mot_droite" | cut -d'.' -f2)
+                if [ "$mot_gauche" \< "$mot_droite" ]; then
+                    putListe $mot_gauche $indice_liste
+                    indice_gauche=$((indice_gauche + 1))
+                    added=1
+                elif [ "$mot_gauche" \> "$mot_droite" ]; then
+                    putListe $mot_droite $indice_liste
+                    indice_droite=$((indice_droite + 1))
+                    added=1
+                fi
+            fi
+            ;;
+
+        p)
+            cmpGauche=$(stat "$5/$mot_gauche")
+            cmpGauche=$(echo $cmpGauche | cut -d':' -f10)
+            cmpGauche=$(echo $cmpGauche | cut -d'/' -f2)
+            cmpGauche=$(echo $cmpGauche | tr -d ' ')
+            cmpDroite=$(stat "$5/$mot_droite")
+            cmpDroite=$(echo $cmpDroite | cut -d':' -f10)
+            cmpDroite=$(echo $cmpDroite | cut -d'/' -f2)
+            cmpDroite=$(echo $cmpDroite | tr -d ' ')
+            cmpGauche=${cmpGauche:0:${#cmpGauche}-5}
+            cmpDroite=${cmpDroite:0:${#cmpDroite}-5}
+            if [ $cmpGauche \< $cmpDroite ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            elif [ $cmpGauche \> $cmpDroite ]; then
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite + 1))
+                added=1
+            fi
+            ;;
+        g)
+            cmpGauche=$(stat "$5/$mot_gauche")
+            cmpGauche=$(echo $cmpGauche | cut -d':' -f11)
+            cmpGauche=$(echo $cmpGauche | cut -d'/' -f2)
+            cmpGauche=$(echo $cmpGauche | tr -d ' ')
+            cmpDroite=$(stat "$5/$mot_droite")
+            cmpDroite=$(echo $cmpDroite | cut -d':' -f11)
+            cmpDroite=$(echo $cmpDroite | cut -d'/' -f2)
+            cmpDroite=$(echo $cmpDroite | tr -d ' ')
+            cmpGauche=${cmpGauche:0:${#cmpGauche}-5}
+            cmpDroite=${cmpDroite:0:${#cmpDroite}-5}
+            if [ $cmpGauche \< $cmpDroite ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            elif [ $cmpGauche \> $cmpDroite ]; then
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite + 1))
+                added=1
             fi
             ;;
         *)
