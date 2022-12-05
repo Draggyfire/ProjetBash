@@ -184,17 +184,6 @@ function cmp() {
     while [ $added -eq 0 -a $paramTriCpt -le ${#4} ]; do
         myParam=${4:paramTriCpt:1}
         case $myParam in
-        n)
-            if [ "$mot_gauche" \< "$mot_droite" ]; then
-                putListe $mot_gauche $indice_liste
-                indice_gauche=$((indice_gauche + 1))
-                added=1
-            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
-                putListe $mot_droite $indice_liste
-                indice_droite=$((indice_droite + 1))
-                added=1
-            fi
-            ;;
         s)
             cmpGauche=$(stat "$5/$mot_gauche")
             cmpGauche=$(echo $cmpGauche | cut -d':' -f3)
@@ -231,8 +220,33 @@ function cmp() {
                 added=1
             fi
             ;;
+        l)
+            if [ -f "$5/$mot_gauche" -a -f "$5/$mot_droite" ]; then
+                cmpGauche=$(wc -l "$5/$mot_gauche")
+                cmpGauche=$(echo $cmpGauche | tr -d " $5/$mot_gauche")
+                cmpDroite=$(wc -l "$5/$mot_droite")
+                cmpDroite=$(echo $cmpDroite | tr -d " $5/$mot_droite")
+                if [ $cmpGauche -lt $cmpDroite ]; then
+                    putListe $mot_gauche $indice_liste
+                    indice_gauche=$((indice_gauche + 1))
+                    added=1
+                else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+                    putListe $mot_droite $indice_liste
+                    indice_droite=$((indice_droite + 1))
+                    added=1
+                fi
+            fi
+            ;;
         *)
-            echo "unknown"
+            if [ "$mot_gauche" \< "$mot_droite" ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite + 1))
+                added=1
+            fi
             ;;
         esac
 
