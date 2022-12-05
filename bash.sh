@@ -176,7 +176,8 @@ function cmp() {
     #$2: motDroite
     #$3: indiceListe
     #$4: paramTri
-    [ $# -ne 4 ] && "4 parametres dans la fonction cmp" && exit 1
+    #$5: Le chemin (pour stat)
+    [ $# -ne 5 ] && "5 parametres dans la fonction cmp" && exit 1
 
     paramTriCpt=0
     added=0
@@ -185,6 +186,25 @@ function cmp() {
         case $myParam in
         n)
             if [ "$mot_gauche" \< "$mot_droite" ]; then
+                putListe $mot_gauche $indice_liste
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            else #changer en elif et dans le else changer myParam, ajouter 1 à paramTriCpt et laisser added à 0
+                putListe $mot_droite $indice_liste
+                indice_droite=$((indice_droite + 1))
+                added=1
+            fi
+            ;;
+        s)
+            cmpGauche=$(stat "$5/$mot_gauche")
+            cmpGauche=$(echo $cmpGauche | cut -d':' -f3)
+            cmpGauche=$(echo $cmpGauche | tr -d ' ')
+            cmpDroite=$(stat "$5/$mot_droite")
+            cmpDroite=$(echo $cmpDroite | cut -d':' -f3)
+            cmpDroite=$(echo $cmpDroite | tr -d ' ')
+            cmpGauche=${cmpGauche:0:${#cmpGauche}-6}
+            cmpDroite=${cmpDroite:0:${#cmpDroite}-6}
+            if [ $cmpGauche -lt $cmpDroite ]; then
                 putListe $mot_gauche $indice_liste
                 indice_gauche=$((indice_gauche + 1))
                 added=1
@@ -213,10 +233,10 @@ function fusion() {
         local liste_droite=$(echo "$1" | cut -d';' -f$((milieu + 1))-)
         testList=""
         liste=""
-        fusion $liste_gauche $2
+        fusion $liste_gauche $2 "$3"
         liste_gauche=$testList
         testList=""
-        fusion $liste_droite $2
+        fusion $liste_droite $2 "$3"
         liste_droite=$testList
         #echo "Liste param : $1"
 
@@ -234,7 +254,9 @@ function fusion() {
             mot_gauche=$(getWord $liste_gauche $indice_gauche)
             mot_droite=$(getWord $liste_droite $indice_droite)
             #echo "MotG : $mot_gauche  | MotD : $mot_droite"
-            cmp $mot_gauche $mot_droite $indice_liste "$2"
+
+            cmp $mot_gauche $mot_droite $indice_liste "$2" "$3"
+
             indice_liste=$((indice_liste + 1))
         done
 
@@ -256,13 +278,7 @@ function fusion() {
     fi
 }
 
-function trifusion() {
-    # prend chaine de carac en $1
-    fusion $1 "$2"
-    #echo "Liste : $liste"
-}
-
-#trifusion "A;Z;E;R;T;Y;U;I;O;P;Q;S;D;F;G;H;J;K;L;M;W;X;C;V;B;N;"
+#fusion "A;Z;E;R;T;Y;U;I;O;P;Q;S;D;F;G;H;J;K;L;M;W;X;C;V;B;N;"
 
 [ $# -eq 0 -o $# -gt 4 ] && "Veuillez rentrer entre 1 et 4 parametres !" && exit 1
 
@@ -309,7 +325,7 @@ fi
 if [ -n $triParam ]; then
     #echo "Liste: $liste"
     echo "triParam: $triParam"
-    trifusion $liste "$triParam"
+    fusion $liste "$triParam" "$1"
 fi
 
 if [ $decroissant -eq 1 ]; then
