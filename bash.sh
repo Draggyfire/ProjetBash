@@ -484,7 +484,6 @@ if [ $recursive -eq 1 ]; then
     savelsR $1
     nb=$cpt
     liste=$save
-    echo "liste: $liste"
 else
     res=$(savels $1)
     echo "res: $res"
