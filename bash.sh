@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#Groupe:
+#Delcourt Hana
+#Delsol Cameron
+
 #Tout les tris doivent prendre la même chose en paramètre : test.txt;test2.txt; (peut changer)
 #comme ça pour les tris multiple on peut appeler les mêmes fonctions
 
@@ -169,6 +173,34 @@ function putListe() {
     #echo "--------------------"
 }
 
+function triT() {
+    #$1: mot gauche
+    #$2: mot droite
+    #$3: path gauche
+    #$4: path droite
+    [ -d "$3/$1" ] && cmpGauche=1
+    [ -d "$4/$2" ] && cmpDroite=1
+
+    [ -f "$3/$1" ] && cmpGauche=2
+    [ -f "$4/$2" ] && cmpDroite=2
+
+    [ -h "$3/$1" ] && cmpGauche=3
+    [ -h "$4/$2" ] && cmpDroite=3
+
+    [ -b "$3/$1" ] && cmpGauche=4
+    [ -b "$4/$2" ] && cmpDroite=4
+
+    [ -c "$3/$1" ] && cmpGauche=5
+    [ -c "$4/$2" ] && cmpDroite=5
+
+    [ -p "$3/$1" ] && cmpGauche=6
+    [ -p "$4/$2" ] && cmpDroite=6
+
+    [ -S "$3/$1" ] && cmpGauche=7
+    [ -S "$4/$2" ] && cmpDroite=7
+
+}
+
 function cmp() {
     #ajoute le mot gauche OU droite a l'aide de la fonction putListe en fonction de paramTri
     #$1: motGauche
@@ -286,7 +318,26 @@ function cmp() {
                 fi
             fi
             ;;
-
+        t)
+            triT "$mot_gauche" "$mot_droite" "$5" "$6"
+            if [ $cmpGauche -lt $cmpDroite ]; then
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_gauche $indice_liste
+                else
+                    putListe "$5$mot_gauche" $indice_liste
+                fi
+                indice_gauche=$((indice_gauche + 1))
+                added=1
+            elif [ $cmpGauche -gt $cmpDroite ]; then
+                if [ $recursive -eq 0 ]; then
+                    putListe $mot_droite $indice_liste
+                else
+                    putListe "$6$mot_droite" $indice_liste
+                fi
+                indice_droite=$((indice_droite + 1))
+                added=1
+            fi
+            ;;
         p)
             cmpGauche=$(stat "$5/$mot_gauche")
             cmpGauche=$(echo $cmpGauche | cut -d':' -f10)
